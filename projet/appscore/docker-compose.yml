@@ -4,6 +4,7 @@ networks:
   rabbitmq-net:
   redis-net:
   sql-net:
+  web-net:
 
 volumes:
   sql-data:
@@ -45,7 +46,7 @@ services:
     
   applicants.api:
     image: davidmtdev/applicants.api:latest
-    container_name: applicants.api
+    container_name: service-api-applicants
     ports: 
       - 8081:80
     environment:
@@ -54,6 +55,7 @@ services:
     networks:
       - rabbitmq-net
       - sql-net
+      - web-net
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -62,7 +64,7 @@ services:
 
   jobs.api:
     image: davidmtdev/jobs.api:latest
-    container_name: jobs.api
+    container_name: service-api-jobs
     ports: 
     - 8083:80
     environment:
@@ -71,6 +73,7 @@ services:
     networks:
       - rabbitmq-net
       - sql-net
+      - web-net
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -79,7 +82,7 @@ services:
     
   identity.api:
     image: davidmtdev/identity.api:latest
-    container_name: identity.api
+    container_name: service-api-identity
     ports: 
       - 8084:80
     environment:
@@ -88,6 +91,7 @@ services:
     networks:
       - rabbitmq-net
       - redis-net
+      - web-net
     depends_on:
       rabbitmq:
         condition: service_healthy    
@@ -99,10 +103,13 @@ services:
     build:
       dockerfile: Web/Dockerfile
       context: ./
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
     ports: 
       - 80:80
+    networks:
+      - web-net
     depends_on:
       - applicants.api
       - identity.api
       - jobs.api
-    
